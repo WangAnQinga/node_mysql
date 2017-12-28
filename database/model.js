@@ -15,16 +15,35 @@ var model = {};
 model.user = sequelize.define('user', {
     userName: Sequelize.STRING(200),
     password: Sequelize.STRING(9000),
-    userId: {type:Sequelize.BIGINT,primaryKey: true,autoIncrement: true},
-    createTime:Sequelize.STRING,
-    updateTime:Sequelize.STRING
+    userId: { type: Sequelize.BIGINT, primaryKey: true, autoIncrement: true },
+    createTime: Sequelize.STRING,
+    updateTime: Sequelize.STRING
 }, {
-      timestamps: false,
-      underscored: true
-      
+    timestamps: false,
+    underscored: true
+
 });
 // model.user.sync({force: true})
-model.user.sync()
+model.user.sync().then(function() {
+    // 已创建数据表
+    console.log('已创建数据库')
+});;
+
+
+var Product = sequelize.define('product', {
+    title: Sequelize.STRING
+});
+var aaa = sequelize.define('aaa', {
+    first_name: Sequelize.STRING,
+    last_name: Sequelize.STRING
+});
+
+Product.belongsTo(aaa);
+
+Product.sync();
+aaa.sync();
+
+
 //微博
 // model.weibo = sequelize.define('weibo', {
 //     title: Sequelize.STRING(200),
