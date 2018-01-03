@@ -20,7 +20,8 @@ model.user = sequelize.define('user', {
     updateTime: Sequelize.STRING
 }, {
     timestamps: false,
-    underscored: true
+    underscored: true,
+    freezeTableName: true
 
 });
 // model.user.sync({force: true})
@@ -32,10 +33,14 @@ model.user.sync().then(function() {
 
 var Product = sequelize.define('product', {
     title: Sequelize.STRING
+}, {
+    freezeTableName: true
 });
 var aaa = sequelize.define('aaa', {
     first_name: Sequelize.STRING,
     last_name: Sequelize.STRING
+}, {
+    freezeTableName: true
 });
 
 Product.belongsTo(aaa);

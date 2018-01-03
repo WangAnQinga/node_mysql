@@ -3,103 +3,96 @@ let model = require('../database/model.js')
 let bcrypt = require('bcryptjs');
 
 
-module.exports = {
-    userLogin(req, res) {
-        (async() => {
-            var userName = req.body.userName;
-            var password = req.body.password;
+const userLogin = (req, res) => {
+    (async() => {
+
+        const { userName, password } = req.body
+
+        if (!userName || !password) {
+            return res.send({ code: 417, message: '用户信息必须填！', result: null })
+        }
 
 
-
-            if (!userName) {
-                return res.send({ code: 417, message: '用户名必须填！', result: null })
-            }
-
-            if (!password) {
-                return res.send({ code: 417, message: '密码必须填！', result: null })
-            }
-
-
-            var lists = await model.user.findAll({ where: { userName: userName } });
-
-            if (!lists.length) {
-                res.send({ code: 417, message: '用户名不存在' })
-            } else {
-                console.log(lists[0].dataValues.password);
-                bcrypt.compare(password, lists[0].dataValues.password, (err, sure) => {
-                    if (sure) {
-                        delete lists[0].dataValues.password
-                        res.json({ code: 200, message: '登录成功', result: { user: lists[0].dataValues } })
-                    } else {
-                        res.json({ code: 417, message: '密码不正确！', result: null })
-                    }
-                })
-            }
-
-        })();
-
-
-    },
-    userLogout(req, res) {
-        return res.send('userLogout')
-    },
-    userList(req, res) {
-        (async() => {
-            var page = parseInt(req.query.page)
-            var count = parseInt(req.query.count)
-
-            await model.user.findAndCount({
-                // where: '', //为空，获取全部，也可以自己添加条件
-                offset: (page - 1) * count, //开始的数据索引，比如当page=2 时offset=10 ，而pagesize我们定义为10，则现在为索引为10，也就是从第11条开始返回数据条目
-                limit: count //每页限制返回的数据条数
-            }).then((response) => {
-                res.json({ code: 200, message: '查询成功', result: response.rows, totalCount: response.count })
-            }).catch((err) => {
-                res.end(err)
-            })
-
-
-
-        })()
-
-    },
-    userRegister(req, res) {
-        (async() => {
-            var userName = req.body.userName;
-            var password = req.body.password;
-            var time = Date.parse(new Date()) / 1000;
-
-            if (!userName || !password) {
-                res.send({ code: 417, message: '用户信息必须完整！', result: null })
-            }
-
-
-
-            await model.user.findOne({ where: { "userName": userName } }).then((item) => {
-                if (item) {
-                    res.json({ code: 417, message: '用户名已存在！', result: null })
+        await model.user.findOne({ where: { userName: userName } })
+            .then((res) => {
+                if (res) {
+                    res.json({ code: 417, message: '用户名不存在' })
+                } else {
+                    bcrypt.compare(password, res.rows.password, (err, sure) => {
+                        if (sure) {
+                            delete res.rows.password
+                            res.json({ code: 200, message: '登录成功', result: { user: res.rows } })
+                        } else {
+                            res.json({ code: 417, message: '密码不正确！', result: null })
+                        }
+                    })
                 }
             }).catch((err) => {
-                res.end(err)
+
             })
 
+    })();
 
 
-            bcrypt.hash(password, 10, (err, hash) => {
-                if (err) console.log(err)
-                password = hash;
+}
+const userLogout = (req, res) => {
+    return res.send('userLogout')
+}
+const userList = (req, res) => {
+    (async() => {
+        const { page, count } = res.query
 
-                model.user.create({
-                    userName: userName,
-                    password: password,
-                    createTime: time,
-                    updateTime: time
-                }).then(function(p) {
-                    res.json({ code: 200, message: '注册成功！' })
-                }).catch(function(err) {
-                    console.log('failed: ' + err);
+        await model.user.findAndCount({
+            // where: '', //为空，获取全部，也可以自己添加条件
+            offset: (page - 1) * count, //开始的数据索引，比如当page=2 时offset=10 ，而pagesize我们定义为10，则现在为索引为10，也就是从第11条开始返回数据条目
+            limit: count //每页限制返回的数据条数
+        }).then((response) => {
+            res.json({ code: 200, message: '查询成功', result: response.rows, totalCount: response.count })
+        }).catch((err) => {
+            res.end(err)
+        })
+
+
+
+    })()
+
+}
+const userRegister = (req, res) => {
+    (async() => {
+        const { userName, password } = req.body;
+        var time = Date.parse(new Date()) / 1000;
+
+        if (!userName || !password) {
+            res.send({ code: 417, message: '用户信息必须完整！', result: null })
+        }
+
+        await model.user.findOne({ where: { "userName": userName } }).then((item) => {
+            if (item) {
+                res.json({ code: 417, message: '用户名已存在！', result: null })
+            } else {
+                bcrypt.hash(password, 10, (err, hash) => {
+                    if (err) console.log(err)
+                    model.user.create({
+                        userName: userName,
+                        password: hash,
+                        createTime: time,
+                        updateTime: time
+                    }).then((p) => {
+                        res.json({ code: 200, message: '注册成功！' })
+                    }).catch((err) => {
+                        console.log('failed: ' + err);
+                    })
                 })
-            })
-        })();
-    }
+            }
+        }).catch((err) => {
+            res.end(err)
+        })
+    })();
+}
+
+module.exports = {
+    userLogin,
+    userLogout,
+    userList,
+    userRegister
 }
