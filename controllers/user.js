@@ -1,34 +1,44 @@
 let moment = require('moment');
 let model = require('../database/model.js')
 let bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken')
 
 
 const userLogin = (req, res) => {
     (async() => {
-
-        const { userName, password } = req.body
+        const { userName, password } = req.body;
 
         if (!userName || !password) {
             return res.send({ code: 417, message: '用户信息必须填！', result: null })
         }
 
-
         await model.user.findOne({ where: { userName: userName } })
-            .then((res) => {
-                if (res) {
-                    res.json({ code: 417, message: '用户名不存在' })
+            .then((user) => {
+                if (!user) {
+                    // res.json({ code: 417, message: '用户名不存在' })
+                    return Promise.reject({ message: '没找到用户！' })
                 } else {
-                    bcrypt.compare(password, res.rows.password, (err, sure) => {
+
+                    bcrypt.compare(password, user.dataValues.password, (err, sure) => {
                         if (sure) {
-                            delete res.rows.password
-                            res.json({ code: 200, message: '登录成功', result: { user: res.rows } })
+                            console.log(sure)
+                                // delete res.rows.password
+                                // res.json({ code: 200, message: '登录成功', result: { user: res.rows } })
+                            const payload = {
+                                userName: user.dataValues.userName
+                            }
+
+                            const secret = 'I_LOVE_LL'
+                            const token = jwt.sign(payload, secret);
+                            res.send({ token })
                         } else {
-                            res.json({ code: 417, message: '密码不正确！', result: null })
+                            // res.json({ code: 417, message: '密码不正确！', result: null })
+                            res.status(401).send({ message: "未通过身份验证！" })
                         }
                     })
                 }
             }).catch((err) => {
-
+                res.status(400).send(err)
             })
 
     })();
@@ -90,9 +100,14 @@ const userRegister = (req, res) => {
     })();
 }
 
+const me = (req, res) => {
+    res.send(`hello ~ ${req.decoded.userName}`)
+}
+
 module.exports = {
     userLogin,
     userLogout,
     userList,
-    userRegister
+    userRegister,
+    me
 }
