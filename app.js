@@ -7,6 +7,8 @@ let port = process.env.PORT || 9999;
 
 let app = express();
 
+app.set('secret', 'I_LOVE_LL')
+
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 
