@@ -13,15 +13,15 @@ var sequelize = new Sequelize(config.database, config.username, config.password,
 var model = {};
 
 model.user = sequelize.define('user', {
+    userId: { type: Sequelize.BIGINT, primaryKey: true, autoIncrement: true },
     userName: Sequelize.STRING(200),
     password: Sequelize.STRING(9000),
-    userId: { type: Sequelize.BIGINT, primaryKey: true, autoIncrement: true },
     createTime: Sequelize.STRING,
     updateTime: Sequelize.STRING
 }, {
     timestamps: false,
     underscored: true,
-    freezeTableName: true
+    freezeTableName: true //默认表名复数，为true,表名为单数
 
 });
 // model.user.sync({force: true})
@@ -30,23 +30,6 @@ model.user.sync().then(function() {
     console.log('已创建数据库')
 });;
 
-
-var Product = sequelize.define('product', {
-    title: Sequelize.STRING
-}, {
-    freezeTableName: true
-});
-var aaa = sequelize.define('aaa', {
-    first_name: Sequelize.STRING,
-    last_name: Sequelize.STRING
-}, {
-    freezeTableName: true
-});
-
-Product.belongsTo(aaa);
-
-Product.sync();
-aaa.sync();
 
 
 //微博
