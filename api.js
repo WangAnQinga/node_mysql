@@ -1,10 +1,11 @@
-let path = '/api';
+
 
 
 module.exports = {
     //user
-    userLogin: path + '/user/login',
-    userRegister: path + '/user/register',
-    userLogout: path + '/user/logout',
-    userList: path + '/user/list',
+    userLogin: '/user/login',
+    userRegister: '/user/register',
+    userLogout: '/user/logout',
+    userList:  '/user/list',
+    userUpdate: '/user/update',
 }

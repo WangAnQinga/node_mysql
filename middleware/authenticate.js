@@ -6,6 +6,7 @@ const authenticate = (req, res, next) => {
     if (token) {
         jwt.verify(token, 'I_LOVE_LL', (error, decoded) => {
             if (error) {
+                console.log(error);
                 return res.send(error)
             } else {
                 req.decoded = decoded;

@@ -20,16 +20,18 @@ const userLogin = (req, res) => {
                 } else {
 
                     bcrypt.compare(password, user.dataValues.password, (err, sure) => {
+                        console.log(sure)
                         if (sure) {
-                            console.log(sure)
-                                // delete res.rows.password
-                                // res.json({ code: 200, message: '登录成功', result: { user: res.rows } })
+
+                            // delete res.rows.password
+                            // res.json({ code: 200, message: '登录成功', result: { user: res.rows } })
                             const payload = {
                                 userName: user.dataValues.userName
                             }
 
-                            const secret = 'I_LOVE_LL'
-                            const token = jwt.sign(payload, secret);
+                            const secret = 'I_LOVE_LL';
+                            const expiresIn = { expiresIn: 60 }
+                            const token = jwt.sign(payload, secret, expiresIn);
                             res.send({ token })
                         } else {
                             // res.json({ code: 417, message: '密码不正确！', result: null })
@@ -104,10 +106,32 @@ const me = (req, res) => {
     res.send(`hello ~ ${req.decoded.userName}`)
 }
 
+
+const update = (req, res) => {
+    (async() => {
+        const { userId, userName, password } = req.body;
+        console.log(userId, userName, password);
+        await model.user.findOne({ where: { 'userId': userId } }).then(item => {
+            if (!item) {
+                res.status(417).send({ message: '用户ID不存在' })
+            } else {
+                if (userName) {
+                    model.user.update({ "userName": userName }, { where: { "userId": userId } })
+                        .then(success => {
+                            res.status(200).send({ message: '修改用户名成功！' })
+                        })
+                }
+            }
+        })
+
+    })()
+
+}
 module.exports = {
     userLogin,
     userLogout,
     userList,
     userRegister,
-    me
+    me,
+    update
 }

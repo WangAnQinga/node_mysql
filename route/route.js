@@ -16,6 +16,8 @@ router.post(api.userLogin, user.userLogin)
 
 router.post(api.userLogout, user.userLogout)
 
+router.post(api.userUpdate, user.update)
+
 router.post(api.userRegister, user.userRegister)
 
 router.get(api.userList, user.userList)
